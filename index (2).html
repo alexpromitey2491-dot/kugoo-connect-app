@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kugoo Connect</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; height: 100vh; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loader-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e0e0e0;
+            border-top-color: #0077ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="loader" id="loader">
+        <div class="loader-spinner"></div>
+    </div>
+    
+    <iframe 
+        id="appFrame"
+        src="https://script.google.com/macros/s/AKfycbyn_BpriYYNtjZOPQ8fXqXbgfDKsDmF3jE4Ia16wgMyYRsJNaL4H-pojF-uvTMGJ1Q/exec"
+    ></iframe>
+    
+    <script>
+        const iframe = document.getElementById('appFrame');
+        const loader = document.getElementById('loader');
+        iframe.addEventListener('load', function() { loader.style.display = 'none'; });
+        setTimeout(function() { loader.style.display = 'none'; }, 5000);
+    </script>
+</body>
+</html>
