@@ -5,36 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Kugoo Connect</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { margin: 0; overflow: hidden; height: 100vh; }
-        iframe { width: 100%; height: 100%; border: none; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        
+        body {
+            background: #ffffff;
+        }
+        
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            margin: 0;
+            padding: 0;
+            display: block;
+        }
+        
         .loader {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: white;
+            background: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
             flex-direction: column;
             gap: 15px;
+            z-index: 1000;
         }
+        
         .loader-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e0e0e0;
+            width: 45px;
+            height: 45px;
+            border: 4px solid #f0f0f0;
             border-top-color: #0077ff;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
         .loader-text {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             color: #666;
             font-size: 14px;
+        }
+        
+        /* Скрываем скроллбары */
+        ::-webkit-scrollbar {
+            display: none;
         }
     </style>
 </head>
@@ -47,7 +87,8 @@
     <iframe 
         id="appFrame"
         src="https://script.google.com/macros/s/AKfycbyn_BpriYYNtjZOPQ8fXqXbgfDKsDmF3jE4Ia16wgMyYRsJNaL4H-pojF-uvTMGJ1Q/exec"
-        allow="camera; microphone; clipboard-read; clipboard-write"
+        allow="camera; microphone; clipboard-read; clipboard-write; autoplay"
+        sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads"
     ></iframe>
     
     <script src="https://vk.com/js/api/xd_connection.js?2"></script>
@@ -57,7 +98,6 @@
             if (typeof VK !== 'undefined' && VK.init) {
                 VK.init(function() {
                     console.log('VK Bridge инициализирован');
-                    // Отправляем событие инициализации
                     if (typeof VKWebAppInit !== 'undefined') {
                         VKWebAppInit();
                     } else if (window.vkBridge) {
@@ -67,35 +107,63 @@
                     console.log('Ошибка инициализации VK Bridge');
                 });
             } else {
-                // Если VK не загрузился, пробуем альтернативный способ
-                setTimeout(initVK, 500);
+                setTimeout(initVK, 300);
             }
         }
         
-        // Запускаем инициализацию после загрузки страницы
-        document.addEventListener('DOMContentLoaded', initVK);
+        // Функция для адаптации iframe
+        function resizeIframe() {
+            const iframe = document.getElementById('appFrame');
+            if (iframe) {
+                // Получаем реальные размеры окна
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                
+                // Отправляем размеры в iframe (если скрипт их принимает)
+                iframe.contentWindow.postMessage({
+                    type: 'resize',
+                    width: width,
+                    height: height
+                }, '*');
+            }
+        }
         
         // Обработка iframe
         const iframe = document.getElementById('appFrame');
         const loader = document.getElementById('loader');
         
+        // Когда iframe загрузился
         iframe.addEventListener('load', function() {
-            // Скрываем загрузчик через 500мс после загрузки iframe
             setTimeout(function() {
                 loader.style.display = 'none';
+                resizeIframe(); // Отправляем размеры
             }, 500);
         });
         
-        // Запасной таймер - скрыть загрузчик через 10 секунд в любом случае
-        setTimeout(function() {
-            loader.style.display = 'none';
-        }, 10000);
-        
-        // Обработка ошибок iframe
-        iframe.addEventListener('error', function() {
-            console.error('Ошибка загрузки iframe');
-            document.querySelector('.loader-text').textContent = 'Ошибка загрузки. Проверьте интернет.';
+        // При изменении размера окна
+        window.addEventListener('resize', function() {
+            resizeIframe();
         });
+        
+        // При повороте экрана на мобильных устройствах
+        window.addEventListener('orientationchange', function() {
+            setTimeout(resizeIframe, 100);
+        });
+        
+        // Запасной таймер
+        setTimeout(function() {
+            if (loader.style.display !== 'none') {
+                loader.style.display = 'none';
+            }
+            resizeIframe();
+        }, 8000);
+        
+        // Запускаем инициализацию VK
+        document.addEventListener('DOMContentLoaded', initVK);
+        
+        // Дополнительная проверка через секунду после загрузки
+        setTimeout(resizeIframe, 1000);
+        setTimeout(resizeIframe, 2000);
     </script>
 </body>
 </html>
